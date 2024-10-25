@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: ridedb-deployment
+  labels:
+    app: ridedb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ridedb
+  template:
+    metadata:
+      labels:
+        app: ridedb
+    spec:
+      containers:
+      - name: ridedb
+        image: postgres:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: databases-configmap
+              key: ridedb-name
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: databases-secrets
+              key: ridedb-username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: databases-secrets
+                key: ridedb-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ridedb-service
+spec:
+  selector:
+    app: ridedb
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
