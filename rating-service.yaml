@@ -21,8 +21,8 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: eureka.instance.preferIpAddress
-          value: 'true'
+        - name: eureka.instance.hostname
+          value: 'rating-service'
         - name: POSTGRES_DB
           valueFrom:
             configMapKeyRef:
@@ -38,3 +38,15 @@ spec:
               secretKeyRef:
                 name: databases-secrets
                 key: ratingdb-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rating-service
+spec:
+  selector:
+    app: rating
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080                

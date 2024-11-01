@@ -66,7 +66,7 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 9092
-        env:
+        env:        
           - name: KAFKA_BROKER_ID
             valueFrom:
               configMapKeyRef:
@@ -102,6 +102,7 @@ spec:
               configMapKeyRef:
                 name: kafka-configmap
                 key: kafka-offsets-topic-replication-factor
+       
 ---
 apiVersion: v1
 kind: Service
