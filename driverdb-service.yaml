@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: driverdb-deployment
+  labels:
+    app: driverdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: driverdb
+  template:
+    metadata:
+      labels:
+        app: driverdb
+    spec:
+      containers:
+      - name: driverdb
+        image: postgres:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: databases-configmap
+              key: driverdb-name
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: databases-secrets
+              key: driverdb-username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: databases-secrets
+                key: driverdb-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: driverdb-service
+spec:
+  selector:
+    app: driverdb
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

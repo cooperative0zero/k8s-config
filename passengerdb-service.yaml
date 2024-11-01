@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: passengerdb-deployment
+  labels:
+    app: passengerdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: passengerdb
+  template:
+    metadata:
+      labels:
+        app: passengerdb
+    spec:
+      containers:
+      - name: passengerdb
+        image: postgres:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: databases-configmap
+              key: passengerdb-name
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: databases-secrets
+              key: passengerdb-username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: databases-secrets
+                key: passengerdb-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: passengerdb-service
+spec:
+  selector:
+    app: passengerdb
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

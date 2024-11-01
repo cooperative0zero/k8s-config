@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: driver-deployment
+  labels:
+    app: driver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: driver
+  template:
+    metadata:
+      labels:
+        app: driver
+    spec:
+      containers:
+      - name: driver
+        image: driver-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        env:
+        - name: eureka.instance.hostname
+          value: 'driver-service'
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: databases-configmap
+              key: driverdb-name
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: databases-secrets
+              key: driverdb-username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: databases-secrets
+                key: driverdb-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: driver-service
+spec:
+  selector:
+    app: driver
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080                

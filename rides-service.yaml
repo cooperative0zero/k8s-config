@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: ride-deployment
+  labels:
+    app: ride
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ride
+  template:
+    metadata:
+      labels:
+        app: ride
+    spec:
+      containers:
+      - name: ride
+        image: ride-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        env:
+        - name: eureka.instance.hostname
+          value: 'ride-service'
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: databases-configmap
+              key: ridedb-name
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: databases-secrets
+              key: ridedb-username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: databases-secrets
+                key: ridedb-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ride-service
+spec:
+  selector:
+    app: ride
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: passenger-deployment
+  labels:
+    app: passenger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: passenger
+  template:
+    metadata:
+      labels:
+        app: passenger
+    spec:
+      containers:
+      - name: passenger
+        image: passenger-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        env:
+        - name: eureka.instance.hostname
+          value: 'passenger-service'
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: databases-configmap
+              key: passengerdb-name
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: databases-secrets
+              key: passengerdb-username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: databases-secrets
+                key: passengerdb-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: passenger-service
+spec:
+  selector:
+    app: passenger
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
